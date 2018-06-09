@@ -10,12 +10,11 @@ import (
 
 	"github.com/blang/semver"
 	"github.com/jghiloni/spring-initializr-resource"
-	"github.com/jghiloni/spring-initializr-resource/net"
 )
 
 // Command will perform the check operation and look for new versions
 type Command struct {
-	Client net.HTTPClient
+	Client *http.Client
 }
 
 // Run will check the specified initializr site and report back new versions from the last check

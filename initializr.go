@@ -7,12 +7,10 @@ import (
 	"net/url"
 	"os"
 	"strings"
-
-	"github.com/jghiloni/spring-initializr-resource/net"
 )
 
 // NewHTTPClient will create an HTTP client configured with the SSL options
-func NewHTTPClient(source Source) (net.HTTPClient, error) {
+func NewHTTPClient(source Source) (*http.Client, error) {
 	certs, err := x509.SystemCertPool()
 	if err != nil {
 		return nil, err
