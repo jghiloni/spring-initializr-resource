@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"io/ioutil"
 	"log"
 	"os"
 
@@ -31,8 +32,20 @@ func main() {
 }
 
 func inputRequest(request *check.Request) {
-	if err := json.NewDecoder(os.Stdin).Decode(request); err != nil {
+	stdin, err := ioutil.ReadAll(os.Stdin)
+	if err != nil {
 		log.Fatalf("reading request from stdin: %s", err.Error())
+	}
+
+	if f, err := ioutil.TempFile(os.TempDir(), "check-request-"); err != nil {
+		log.Printf("could not log request from stdin but will continue anyway: %s", err.Error())
+	} else {
+		defer f.Close()
+		f.Write(stdin)
+	}
+
+	if err := json.Unmarshal(stdin, request); err != nil {
+		log.Fatalf("decoding request: %s", err.Error())
 	}
 }
 
