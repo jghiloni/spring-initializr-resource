@@ -29,7 +29,7 @@ func (command *Command) Run(request Request) (Response, error) {
 		return nil, err
 	}
 
-	req.Header.Add("Accept", "application/json")
+	req.Header.Add("Accept", "application/vnd.initializr.v2.1+json")
 
 	httpResponse, err := command.Client.Do(req)
 	if err != nil {
