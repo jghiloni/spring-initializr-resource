@@ -1,0 +1,10 @@
+{
+  "source": {
+    "product_version": "^1\\.5\\..*",
+    "include_snapshots": "true"
+  },
+  "version": {
+    "name": "1.5.13",
+    "id": "1.5.13.RELEASE"
+  }
+}

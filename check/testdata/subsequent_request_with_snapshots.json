@@ -1,0 +1,9 @@
+{
+  "source": {
+    "include_snapshots": "true"
+  },
+  "version": {
+    "name": "2.0.1 (RELEASE)",
+    "id": "2.0.1.RELEASE"
+  }
+}
