@@ -1,0 +1,34 @@
+---
+resources:
+- name: base-image
+  type: docker-image
+  check_every: 24h
+  source:
+    repository: alpine
+    tag: edge
+
+- name: resource-type-image
+  type: docker-image
+  check_every: 24h
+  source:
+    repository: ((docker-repository))
+    username: ((docker-username))
+    password: ((docker-password))
+
+- name: source
+  type: git
+  source:
+    uri: ((git-uri))
+    private_key: ((git-private-key))
+
+jobs:
+- name: build
+  plan:
+  - aggregate:
+    - get: base-image
+      trigger: true
+    - get: source
+      trigger: true
+  - put: resource-type-image
+    params:
+      build: source
