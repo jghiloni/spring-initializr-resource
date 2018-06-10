@@ -9,6 +9,9 @@ import (
 	"strings"
 )
 
+// AcceptHeader will tie the Initializr API to the current version so future changes won't break us unexpectedly
+const AcceptHeader = "application/vnd.initializr.v2.1+json"
+
 // NewHTTPClient will create an HTTP client configured with the SSL options
 func NewHTTPClient(source Source) (*http.Client, error) {
 	certs, err := x509.SystemCertPool()

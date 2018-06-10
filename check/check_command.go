@@ -28,7 +28,7 @@ func (command *Command) Run(request Request) (Response, error) {
 		return nil, err
 	}
 
-	req.Header.Add("Accept", "application/vnd.initializr.v2.1+json")
+	req.Header.Add("Accept", initializr.AcceptHeader)
 
 	httpResponse, err := command.Client.Do(req)
 	if err != nil {

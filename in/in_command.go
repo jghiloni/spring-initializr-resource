@@ -60,6 +60,7 @@ func (command *Command) Run(destinationDir string, request Request) (Response, e
 		return emptyResponse, err
 	}
 
+	httpRequest.Header.Add("Accept", initializr.AcceptHeader)
 	httpResponse, err := command.Client.Do(httpRequest)
 	if err != nil {
 		return emptyResponse, err
