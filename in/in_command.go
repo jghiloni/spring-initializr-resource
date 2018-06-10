@@ -1,6 +1,7 @@
 package in
 
 import (
+	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"net/http"
@@ -82,13 +83,15 @@ func (command *Command) Run(destinationDir string, request Request) (Response, e
 		return emptyResponse, err
 	}
 
-	err = ioutil.WriteFile(filepath.Join(destinationDir, "version"), []byte(request.Version.ID), 0644)
-	if err != nil {
+	if err = ioutil.WriteFile(filepath.Join(destinationDir, "version"), []byte(request.Version.ID), 0644); err != nil {
 		return emptyResponse, err
 	}
 
-	err = ioutil.WriteFile(filepath.Join(destinationDir, "url"), []byte(targetURL.String()), 0644)
-	if err != nil {
+	if err = ioutil.WriteFile(filepath.Join(destinationDir, "url"), []byte(targetURL.String()), 0644); err != nil {
+		return emptyResponse, err
+	}
+
+	if err = command.writeDependencies(destinationDir, request); err != nil {
 		return emptyResponse, err
 	}
 
@@ -105,6 +108,65 @@ func (command *Command) Run(destinationDir string, request Request) (Response, e
 			},
 		},
 	}, nil
+}
+
+func (command *Command) writeDependencies(destDir string, request Request) error {
+	depResponse := struct {
+		Dependencies map[string]interface{} `json:"dependencies,omitempty"`
+		BOMs         map[string]interface{} `json:"boms,omitempty"`
+	}{}
+
+	targetURL := request.Source.URL
+	targetURL.Path = "/dependencies"
+
+	params := url.Values{}
+	params.Add("bootVersion", request.Version.ID)
+	targetURL.RawQuery = params.Encode()
+
+	req, err := http.NewRequest("GET", targetURL.String(), nil)
+	if err != nil {
+		return err
+	}
+
+	req.Header.Add("Accept", initializr.AcceptHeader)
+
+	httpResponse, err := command.Client.Do(req)
+	if err != nil {
+		return err
+	}
+
+	bytes, err := ioutil.ReadAll(httpResponse.Body)
+	if err != nil {
+		return err
+	}
+
+	if httpResponse.StatusCode != 200 {
+		return fmt.Errorf("Expected 200, got %d with response %s", httpResponse.StatusCode, string(bytes))
+	}
+
+	err = json.Unmarshal(bytes, &depResponse)
+	if err != nil {
+		return err
+	}
+
+	deps := make([]string, len(depResponse.Dependencies)+len(depResponse.BOMs))
+	curIdx := 0
+	for key := range depResponse.Dependencies {
+		deps[curIdx] = key
+		curIdx++
+	}
+
+	for key := range depResponse.BOMs {
+		deps[curIdx] = key
+		curIdx++
+	}
+
+	encoded, err := json.Marshal(deps)
+	if err != nil {
+		return err
+	}
+
+	return ioutil.WriteFile(filepath.Join(destDir, "available-dependencies"), encoded, 0644)
 }
 
 func empty(s string) bool {

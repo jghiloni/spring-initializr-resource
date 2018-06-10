@@ -1,6 +1,7 @@
 package in_test
 
 import (
+	"encoding/json"
 	"encoding/xml"
 	"io/ioutil"
 	"net/http/httptest"
@@ -85,10 +86,11 @@ func TestInCommand(t *testing.T) {
 				Expect(filepath.Join(destDir, "pom.xml")).To(BeARegularFile())
 				Expect(filepath.Join(destDir, "version")).To(BeARegularFile())
 				Expect(filepath.Join(destDir, "url")).To(BeARegularFile())
+				Expect(filepath.Join(destDir, "available-dependencies")).To(BeARegularFile())
 
 				fileList, err := ioutil.ReadDir(destDir)
 				Expect(err).NotTo(HaveOccurred())
-				Expect(fileList).To(HaveLen(3))
+				Expect(fileList).To(HaveLen(4))
 			})
 
 			it("Should generate all the appropriate metadata", func() {
@@ -115,8 +117,16 @@ func TestInCommand(t *testing.T) {
 				urlBytes, err := ioutil.ReadFile(filepath.Join(destDir, "url"))
 				Expect(err).NotTo(HaveOccurred())
 
+				depBytes, err := ioutil.ReadFile(filepath.Join(destDir, "available-dependencies"))
+				Expect(err).NotTo(HaveOccurred())
+
 				err = xml.NewDecoder(pomFile).Decode(new(interface{}))
 				Expect(err).NotTo(HaveOccurred())
+
+				depBody := make([]string, 0, 116)
+				err = json.Unmarshal(depBytes, &depBody)
+				Expect(err).NotTo(HaveOccurred())
+				Expect(depBody).To(HaveLen(116))
 
 				Expect(string(urlBytes)).To(Equal(initializrServer.URL + "/pom.xml?bootVersion=2.0.2.RELEASE&type=maven-build"))
 				Expect(string(versionBytes)).To(Equal("2.0.2.RELEASE"))
