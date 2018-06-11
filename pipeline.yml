@@ -20,6 +20,7 @@ resources:
   source:
     uri: ((git-uri))
     private_key: ((git-private-key))
+    ignore_paths: [README.md]
 
 jobs:
 - name: build
